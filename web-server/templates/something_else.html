@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+	
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font: 16px Arial;  
+}
+
+/*the container must be positioned relative:*/
+.autocomplete {
+  position: relative;
+  display: inline-block;
+}
+
+input {
+  border: 1px solid transparent;
+  background-color: #f1f1f1;
+  padding: 10px;
+  font-size: 16px;
+}
+
+input[type=text] {
+  background-color: #f1f1f1;
+  width: 100%;
+}
+
+input[type=button] {
+  background-color: DodgerBlue;
+  color: #fff;
+  cursor: pointer;
+}
+
+
+.autocomplete-items {
+  position: absolute;
+  border: 1px solid #d4d4d4;
+  border-bottom: none;
+  border-top: none;
+  z-index: 99;
+  /*position the autocomplete items to be the same width as the container:*/
+  top: 100%;
+  left: 0;
+  right: 0;
+}
+
+.autocomplete-items div {
+  padding: 10px;
+  cursor: pointer;
+  background-color: #fff; 
+  border-bottom: 1px solid #d4d4d4; 
+}
+
+/*when hovering an item:*/
+.autocomplete-items div:hover {
+  background-color: #e9e9e9; 
+}
+
+/*when navigating through the items using the arrow keys:*/
+.autocomplete-active {
+  background-color: DodgerBlue !important; 
+  color: #ffffff; 
+}
+</style>
+</head>     
+<body>
+
+<h2>Welcome</h2>
+
+<p></p>
+
+<!--Make sure the form has the autocomplete function switched off:-->
+<form autocomplete="off">
+  <div class="autocomplete" style="width:300px;">
+    <input id="myInput" type="text" name="myCountry" placeholder="Name an Item">
+  </div>
+  <input type="button" value="search" onclick="Submitter();">
+</form>
+
+<br>
+
+<button id="add" onclick="add_new_item();">Add the item to the currently selected tile</button>
+<button id="remove" onclick="remove_item();">Remove the item from the currently selected tile</button>
+<br>
+<button id="expand_right" onclick="expand_right();">expand right</button>
+<button id="expand_down" onclick="expand_down();">expand down</button>
+
+<script>
+function autocomplete(inp, arr) {
+  /*the autocomplete function takes two arguments,
+  the text field element and an array of possible autocompleted values:*/
+  var currentFocus;
+  /*execute a function when someone writes in the text field:*/
+  inp.addEventListener("input", function(e) {
+      var a, b, i, val = this.value;
+      /*close any already open lists of autocompleted values*/
+      closeAllLists();
+      if (!val) { return false;}
+      currentFocus = -1;
+      /*create a DIV element that will contain the items (values):*/
+      a = document.createElement("DIV");
+      a.setAttribute("id", this.id + "autocomplete-list");
+      a.setAttribute("class", "autocomplete-items");
+      /*append the DIV element as a child of the autocomplete container:*/
+      this.parentNode.appendChild(a);
+      /*for each item in the array...*/
+      for (i = 0; i < arr.length; i++) {
+        /*check if the item starts with the same letters as the text field value:*/
+        if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+          /*create a DIV element for each matching element:*/
+          b = document.createElement("DIV");
+          /*make the matching letters bold:*/
+          b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+          b.innerHTML += arr[i].substr(val.length);
+          /*insert a input field that will hold the current array item's value:*/
+          b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+          /*execute a function when someone clicks on the item value (DIV element):*/
+          b.addEventListener("click", function(e) {
+              /*insert the value for the autocomplete text field:*/
+              inp.value = this.getElementsByTagName("input")[0].value;
+              /*close the list of autocompleted values,
+              (or any other open lists of autocompleted values:*/
+              closeAllLists();
+          });
+          a.appendChild(b);
+        }
+      }
+  });
+  /*execute a function presses a key on the keyboard:*/
+  inp.addEventListener("keydown", function(e) {
+      var x = document.getElementById(this.id + "autocomplete-list");
+      if (x) x = x.getElementsByTagName("div");
+      if (e.keyCode == 40) {
+        /*If the arrow DOWN key is pressed,
+        increase the currentFocus variable:*/
+        currentFocus++;
+        /*and and make the current item more visible:*/
+        addActive(x);
+      } else if (e.keyCode == 38) { //up
+        /*If the arrow UP key is pressed,
+        decrease the currentFocus variable:*/
+        currentFocus--;
+        /*and and make the current item more visible:*/
+        addActive(x);
+      } else if (e.keyCode == 13) {
+        /*If the ENTER key is pressed, prevent the form from being submitted,*/
+        e.preventDefault();
+        if (currentFocus > -1) {
+          /*and simulate a click on the "active" item:*/
+          if (x) x[currentFocus].click();
+        }
+      }
+  });
+  function addActive(x) {
+    /*a function to classify an item as "active":*/
+    if (!x) return false;
+    /*start by removing the "active" class on all items:*/
+    removeActive(x);
+    if (currentFocus >= x.length) currentFocus = 0;
+    if (currentFocus < 0) currentFocus = (x.length - 1);
+    /*add class "autocomplete-active":*/
+    x[currentFocus].classList.add("autocomplete-active");
+  }
+  function removeActive(x) {
+    /*a function to remove the "active" class from all autocomplete items:*/
+    for (var i = 0; i < x.length; i++) {
+      x[i].classList.remove("autocomplete-active");
+    }
+  }
+  function closeAllLists(elmnt) {
+    /*close all autocomplete lists in the document,
+    except the one passed as an argument:*/
+    var x = document.getElementsByClassName("autocomplete-items");
+    for (var i = 0; i < x.length; i++) {
+      if (elmnt != x[i] && elmnt != inp) {
+        x[i].parentNode.removeChild(x[i]);
+      }
+    }
+  }
+  /*execute a function when someone clicks in the document:*/
+  document.addEventListener("click", function (e) {
+      closeAllLists(e.target);
+  });
+}
+
+/*An array containing all the country names in the world:*/
+ItemLog = [];
+/*initiate the autocomplete function on the "myInput" element, and pass along the countries array as possible autocomplete values:*/
+autocomplete(document.getElementById("myInput"), ItemLog);
+
+//ItemLog.push("asd");
+
+</script>
+
+</body>	
+	
+    <title></title>
+
+<body>
+	<p id="ItemList">Hello!</p>
+	<canvas style="display: block" id="myCanvas" width="1200" height="600"></canvas>
+<script>
+    var c = document.getElementById("myCanvas");
+      var ctx = c.getContext("2d");
+      
+  MapArray=[];
+    
+
+        
+ 
+  //  MapArray=[[[[],2,false],[[],2,false],[[],2,false],[[],2,false],[[],2,false],[[],2,false]],
+   //           [[["bread","pizza","item"],0,false],[["bread","danish","oats"],0,false],[["bread","naan bread","oats"],0,false],[["bread","pancakes","bean"],0,false],[["itemb","item","bean"],0,false],[["ugli fruit","yogurt","bean"],0,false]],
+  //            [[["itema","pizza","item"],0,false],[["itemb","item","bean"],0,false],[["itemb","item","bean"],0,false],[["itemb","item","bean"],0,false],[["itemb","item","bean"],0,false],[["itemb","item","bean"],0,false]],
+  //            [[[],2,false],[[],2,false],[[],2,false],[[],2,false],[[],2,false],[[],2,false]],
+  //            [[["lemonade","chocolate","jelly"],0,false],[["itemb","rice","egg"],0,false],[["quail eggs","chicken","bacon"],0,false],[["itemb","ham","bean"],0,false],[["itemb","item","sausage"],0,false],[["sausage","vodka","wine"],0,false]],
+  //            [[["ice cream","macaroons","item"],0,false],[["ice cream","item","bean"],0,false],[["itemb","item","bean"],0,false],[["itemb","item","bean"],0,false],[["itemb","item","bean"],0,false],[["itemb","item","bean"],0,false]],
+  //            [[[],2,false],[[],2,false],[[],2,false],[[],2,false],[[],2,false],[[],2,false]],
+  //            [[["itema","item","item"],0,false],[["falafels","item","bean"],0,false],[["itemb","asparagus","broccoli"],0,false],[["kale","radish","bean"],0,false],[["tomatos","item","radish"],0,false],[["itemb","item","bean"],0,false]],
+ //             [[["itema","item","gum"],0,false],[["itemb","item","bean"],0,false],[["itemb","item","spaggetti"],0,false],[["itemb","item","bean"],0,false],[["itemb","item","bean"],0,false],[["itemb","item","bean"],0,false]],
+  //           ];
+
+             
+    Quilt=[0,0]; //as in patchwork, geddit? Used for currently selected tile
+    
+   
+    
+    //prints the graphics
+          function boardwrite(ctx){
+        var y;
+        var x;
+        ctx.fillStyle="#ffffff";
+        ctx.fillRect(0,0,1200,600);
+        for (x = 0; x < MapArray.length; x++) {
+           for (y = 0; y < MapArray[x].length; y++) {
+            if(MapArray[x][y][2]==true){
+             ctx.fillStyle="#000000";
+             ctx.fillRect((x*40),(y*40),40,40);
+             ctx.fillStyle="#009758";
+             ctx.fillRect((x*40)+2,(y*40)+2,36,36);
+            }
+            else if(MapArray[x][y][1]==0){
+             ctx.fillStyle="#000000";
+             ctx.fillRect((x*40),(y*40),40,40);
+             ctx.fillStyle="#009688";
+             ctx.fillRect((x*40)+2,(y*40)+2,36,36);
+            }
+            else if(MapArray[x][y][1]==1){
+             ctx.fillStyle="#000000";
+             ctx.fillRect((x*40),(y*40),40,40);
+             ctx.fillStyle="#004567";
+             ctx.fillRect((x*40)+2,(y*40)+2,36,36);
+            }
+            else if(MapArray[x][y][1]==2){
+             ctx.fillStyle="#000000";
+             ctx.fillRect((x*40),(y*40),40,40);
+             ctx.fillStyle="#ffffff";
+             ctx.fillRect((x*40)+2,(y*40)+2,36,36);
+            }
+        }}}
+        
+              function fetchFromApi() {
+          fetch('/api')
+          .then(
+            function(response) {
+              return response.json();
+            })
+          .then(
+            function(body) {
+              console.log(body);
+              
+              
+              
+              MapArray=body;
+              boardwrite(ctx);
+              orderItems();
+            });
+          //orderItems();
+        }
+        
+         fetchFromApi();
+         
+         
+        function admin(name,location,type){
+          
+              massage=[name,location,type];
+    
+                fetch(
+                      '/postman', 
+                      {
+                        method: 'POST',
+                        headers: {
+                         'Content-type': 'application/json',
+                         'Accept': 'application/json'
+                        },
+                        // Strigify the payload into JSON:
+                        body:JSON.stringify(massage)
+                      }
+                     ).then(res=>{
+                        if(res.ok) {
+                          return res.json();
+                        } else {
+                          alert('something is wrong');
+                        }
+                      }
+                     ).then(jsonResponse=>{
+              
+              // Log the response data in the console
+              console.log(jsonResponse);
+              } 
+              ).catch((err) => console.error(err));
+          
+        }
+         
+    
+    //Selects the tile
+        function SelectTiles(o){
+            var x = 0;
+            var y = 0;
+            x = ~~(o[0]/40);
+            y = ~~(o[1]/40);
+            MapArray[Quilt[0]][Quilt[1]][2]=false;
+            document.getElementById("ItemList").innerHTML = MapArray[x][y][0];
+            MapArray[x][y][2]=true;
+            Quilt=[x,y];
+        }
+        
+        function HighlightTiles(item){
+            var y;
+            var x;
+            var z;
+            for (x = 0; x < MapArray.length; x++) {
+                for (y = 0; y < MapArray[x].length; y++) {
+                  if(MapArray[x][y][1]==1){
+                    MapArray[x][y][1]=0;
+                  }
+                }}
+            for (x = 0; x < MapArray.length; x++) {
+                for (y = 0; y < MapArray[x].length; y++) {
+                    for (z = 0; z < MapArray[x][y][0].length; z++) {
+                        if(item==MapArray[x][y][0][z]){
+                            MapArray[x][y][1]=1;
+                        }
+            }}}
+            boardwrite(ctx);
+        }
+				
+				function orderItems(){
+					var y;
+          var x;
+          var z;
+					var i;
+					var check;
+					for (x = 0; x < MapArray.length; x++) {
+              for (y = 0; y < MapArray[x].length; y++) {
+                  for (z = 0; z < MapArray[x][y][0].length; z++) {
+											check=true;
+											for (i = 0; i < ItemLog.length; i++) {
+													if(MapArray[x][y][0][z]==ItemLog[i]){
+													    check=false;
+													}
+											}
+											if(check==true){
+												ItemLog.push(MapArray[x][y][0][z]);
+											}
+				}}}}
+    
+					function Submitter(){
+						console.log(">>>>>>>>", document.getElementById("myInput").value);
+            HighlightTiles(document.getElementById("myInput").value);
+					}
+          
+          function add_new_item(){
+            
+            //var name=window.prompt('Name of item:');
+            var name=document.getElementById("myInput").value;
+            MapArray[Quilt[0]][Quilt[1]][0].push(name);
+            MapArray[Quilt[0]][Quilt[1]][1]=0;
+            boardwrite(ctx);
+            document.getElementById("ItemList").innerHTML = document.getElementById("ItemList").innerHTML.concat(","+name);
+            //ItemLog.push(name);
+            
+            var i;
+            check=true;
+            for (i = 0; i < ItemLog.length; i++) {
+													if(name==ItemLog[i]){
+													    check=false;
+													}
+											}
+											if(check==true){
+												ItemLog.push(name);
+											}
+            
+            admin(name,Quilt,"add");
+            
+          }
+          
+          function remove_item(){
+            
+            //var name=window.prompt('Name of item:');
+            var name=document.getElementById("myInput").value;
+            var i;
+            var marker;
+            var check=false;
+            console.log(MapArray[Quilt[0]][Quilt[1]][0]);
+            for (i = 0; i < MapArray[Quilt[0]][Quilt[1]][0].length; i++) {
+              if(name==MapArray[Quilt[0]][Quilt[1]][0][i]){
+                console.log(name,i);
+                marker=i;
+                check=true;
+              }
+            }
+            if(check==true){
+              console.log("e");
+              MapArray[Quilt[0]][Quilt[1]][0].splice(marker, 1);
+            }
+            
+            admin(name,Quilt,"remove");
+            
+            document.getElementById("ItemList").innerHTML = MapArray[Quilt[0]][Quilt[1]][0];
+            
+            if(MapArray[Quilt[0]][Quilt[1]][0].length==0){
+              MapArray[Quilt[0]][Quilt[1]][1]=2;
+            }
+            
+          }
+          
+          function expand_down(){
+            var i;
+            console.log("e");
+            for (i = 0; i < MapArray.length; i++){
+              MapArray[i].push([[],2,false]);
+              //console.log(MapArray);
+            }
+            boardwrite(ctx);
+            console.log(MapArray);
+          }
+          
+          function expand_right(){
+            var i;
+            MapArray.push([]);
+            //console.log("e");
+            var e = MapArray.length;
+            console.log(MapArray);
+            for (i = 0; i < MapArray[0].length; i++){
+              MapArray[e-1].push([[],2,false]);
+              //console.log(MapArray);
+            }
+            boardwrite(ctx);
+            //console.log(MapArray);
+            
+          }
+		
+    //function to adjust the coordinates of an event
+          function getMousePosition(canvas, event) {
+          let rect = canvas.getBoundingClientRect();
+          let x = event.clientX - rect.left;
+          let y = event.clientY - rect.top;
+          var o=[x,y];
+          return(o);
+      }
+    
+    //waits for a click
+          let canvasElem = document.querySelector("canvas");
+          canvasElem.addEventListener("mousedown", function(e) {
+          o=getMousePosition(canvasElem, e);
+          SelectTiles(o);
+          boardwrite(ctx);
+      });
+    
+	
+        //console.log(MapArray);
+    boardwrite(ctx);
+    
+    document.getElementById("ItemList").innerHTML = "Select a location to find what it contains";
+    
+</script>
+
+
+
+</body>
+</html>
