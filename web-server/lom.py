@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, url_for, redirect
 import psycopg2
 import json
 import time
@@ -6,8 +6,13 @@ import time
 app = Flask("dom")
 
 table3=[]
-conn=psycopg2.connect(host='localhost',database='inventory',user='inventory',password='inventory')
-cur=conn.cursor()
+try:
+    conn=psycopg2.connect(host='localhost',database='inventory',user='inventory',password='inventory')
+    setup=True
+    cur=conn.cursor()
+except:
+    setup=False
+
 
 def safe(s):
     return s.replace("'","''")
@@ -54,16 +59,31 @@ def update():
     print(table3)
     time.sleep(2)
     
-    
-update()
+if setup:
+    update()
         
 @app.route("/")
 def hello_world():
-    return render_template('something.html')
+    if setup:
+        return render_template('something.html')
+    else:
+        return render_template('warning.html')
+
+@app.route("/init", methods = ['GET'])
+def initer():
+    return render_template('initialiser.html')
+
+@app.route("/init", methods = ['POST'])
+def initerpost():
+    return redirect("/admin", code=302)
+
 
 @app.route("/admin")
 def hello_admin():
-    return render_template('something_else.html')
+    if setup:
+        return render_template('something_else.html')
+    else:
+        return render_template('warning.html')
 
 @app.route('/api')
 def api():
