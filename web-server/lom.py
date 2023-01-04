@@ -75,6 +75,7 @@ def initer():
 
 @app.route("/init", methods = ['POST'])
 def initerpost():
+    print(request.form.get("password"))
     conn=psycopg2.connect(host='localhost',database='postgres',user='postgres',password=request.form.get("password"))
     return redirect("/admin", code=302)
 
