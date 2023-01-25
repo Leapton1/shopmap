@@ -7,7 +7,8 @@ app = Flask("dom")
 
 table3=[]
 try:
-    conn=psycopg2.connect(host='localhost',database='inventory',user='inventory',password='inventory')
+    # conn=psycopg2.connect(host='localhost',database='inventory',user='inventory',password='inventory')
+    conn=psycopg2.connect(host='dpg-cf80romn6mplr40lfeeg-a',database='inventory_na16',user='inventory',password='n1QrdZzbDjcRFhHGaPr5hQ5gLeV6DQQv')
     setup=True
     cur=conn.cursor()
 except:
@@ -73,11 +74,11 @@ def hello_world():
 def initer():
     return render_template('initialiser.html')
 
-@app.route("/init", methods = ['POST'])
-def initerpost():
-    print(request.form.get("password"))
-    conn=psycopg2.connect(host='localhost',database='postgres',user='postgres',password=request.form.get("password"))
-    return redirect("/admin", code=302)
+#@app.route("/init", methods = ['POST'])
+#def initerpost():
+#    print(request.form.get("password"))
+#    conn=psycopg2.connect(host='localhost',database='postgres',user='postgres',password=request.form.get("password"))
+#    return redirect("/admin", code=302)
 
 
 @app.route("/admin")
