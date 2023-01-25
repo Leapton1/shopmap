@@ -2,4 +2,4 @@ name: dpg-cf80romn6mplr40lfeeg-a
 database: inventory_na16
 password: n1QrdZzbDjcRFhHGaPr5hQ5gLeV6DQQv
 Internal URL: postgres://inventory:n1QrdZzbDjcRFhHGaPr5hQ5gLeV6DQQv@dpg-cf80romn6mplr40lfeeg-a/inventory_na16
-PSQL command: PGPASSWORD=n1QrdZzbDjcRFhHGaPr5hQ5gLeV6DQQv psql -h dpg-cf80romn6mplr40lfeeg-a.frankfurt-postgres.render.com -U inventory inventory_na16
+PSQL command: PGPASSWORD=n1QrdZzbDjcRFhHGaPr5hQ5gLeV6DQQv psql -h dpg-cf80romn6mplr40lfeeg-a.frankfurt-postgres.render.com -U inventory -f .\web-server\database_start.sql inventory_na16
