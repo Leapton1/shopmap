@@ -166,4 +166,8 @@ def postman():
 def hello_objects():
     return "<p>Hello, objects!</p>"
   
-app.run()
+#app.run()
+
+port=os.getenv('PORT') or 80
+
+app.run(host='0.0.0.0', port=port)
