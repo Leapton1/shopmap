@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify, request, url_for, redirect
 import psycopg2
 import json
 import time
+import os
 
 app = Flask("dom")
 
