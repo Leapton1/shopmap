@@ -12,6 +12,7 @@ try:
     setup=True
     cur=conn.cursor()
 except:
+    print("no")
     setup=False
 
 
