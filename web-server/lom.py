@@ -119,7 +119,7 @@ def postman():
         table3[pat[1][0]][pat[1][1]][1]=0
         print(table3)
         cur=conn.cursor()
-        cur.execute("insert into inventory(x,y,shop_id,product_id,name) values (%s,"+safe(str(pat[1][1]+1))+",1,1,'"+safe(pat[0])+"');", str(pat[1][0]+1))
+        cur.execute("insert into inventory(x,y,name) values (%s,"+safe(str(pat[1][1]+1))+",'"+safe(pat[0])+"');", str(pat[1][0]+1))
         conn.commit()
         cur.close()
     elif pat[2]=='remove':
